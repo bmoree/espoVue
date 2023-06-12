@@ -14,15 +14,66 @@
       </ion-header>
 
       <div id="container">
-        <strong>Ready to create an app?</strong>
-        <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>SignIn</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item>
+              <ion-label position="floating">Espo URL</ion-label>
+              <ion-input v-model="espoUrl"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="floating">User Name</ion-label>
+              <ion-input v-model="userInfo.username"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="floating">Password</ion-label>
+              <ion-input type="password" v-model="userInfo.password"></ion-input>
+            </ion-item>
+            <ion-button expand="full" @click="login()">Login</ion-button>
+          </ion-card-content>
+        </ion-card>
       </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+import { ref } from 'vue'
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, loadingController } from '@ionic/vue';
+import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton } from '@ionic/vue';
+
+const espoUrl = ref('https://espo.amadeu.ml');
+const userInfo = ref({
+  username: '',
+  password: ''
+});
+
+async function login() {
+  const tokenString = btoa(`${userInfo.value.username}:${userInfo.value.password}`)
+  await fetch(`${espoUrl.value}/api/v1/App/user`, {
+    // method: "GET", // *GET, POST, PUT, DELETE, etc.
+    mode: "cors", // no-cors, *cors, same-origin
+    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: 'include',
+    headers: {
+      "Accept": "application/json, text/javascript, */*; q=0.01",
+      "Accept-Encoding": "gzip, deflate, br",
+
+      "Connection": "keep-alive",
+      "Content-Type": "application/json",
+      "Host": `${espoUrl.value}`,
+      "Authorization": `Basic ${tokenString}`,
+      "Espo-Authorization": `${tokenString}`,
+      "Espo-Authorization-By-Token": "false",
+      "Espo-Authorization-Create-Token-Secret": "true"
+    }}).then(function(response) {
+        return response.json();
+    }).then(function(){
+        return
+    });
+}
 </script>
 
 <style scoped>
