@@ -1,0 +1,7 @@
+{
+  "name": "espo",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}
