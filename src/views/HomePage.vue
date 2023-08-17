@@ -2,19 +2,19 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>Blank</ion-title>
+        <ion-title>Espo Capacitor Vue client</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
-          <ion-title size="large">Blank</ion-title>
+          <ion-title size="large">Espo Capacitor Vue client (fullscreen)</ion-title>
         </ion-toolbar>
       </ion-header>
 
-      <div id="container">
-        <ion-card>
+      <div id="container" >
+        <ion-card v-if="!loggedIn">
           <ion-card-header>
             <ion-card-title>SignIn</ion-card-title>
           </ion-card-header>
@@ -37,6 +37,19 @@
 
           </ion-card-content>
         </ion-card>
+        <ion-card v-else>
+          <ion-card-header>
+            <ion-card-title>Hi {{ user.name }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <p>You have access to:</p>
+            <ul>
+              <li v-for="(tab, index) in appSettings.tabList" :key="index">{{ tab }}</li>
+            </ul>
+          </ion-card-content>
+        </ion-card>
+        <ion-button expand="full" @click="loggedIn = !loggedIn">toggle login</ion-button>
+
       </div>
     </ion-content>
   </ion-page>
@@ -48,19 +61,22 @@ import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, loadingController
 import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton } from '@ionic/vue';
 import { Preferences } from '@capacitor/preferences';
 
+const loggedIn = ref(false);
 const espoUrl = ref('http://espocrm.test');
 const userInfo = ref({
   username: '',
   password: ''
 });
-const user = ref({});
-const preferences = ref({});
+const user = ref(null);
+const preferences = ref(null);
+const appSettings = ref({});
 const token = ref('');
 
  onMounted( () => {
   setSavedToken()
   setSavedUser()
   setSavedPreferences()
+  setSavedSettings()
 })
 
 
@@ -98,13 +114,20 @@ async function login () {
         value: JSON.stringify(data.user),
       });
       Preferences.set({
-        key: 'settings',
+        key: 'preferences',
         value: JSON.stringify(data.preferences),
+      });
+
+      console.log(data.settings)
+      Preferences.set({
+        key: 'settings',
+        value: JSON.stringify(data.settings),
       });
       
       setSavedToken()
       setSavedUser()
       setSavedPreferences()
+      setSavedSettings()
     })
     .catch(console.error);
 }
@@ -119,6 +142,10 @@ async function login () {
   async function setSavedPreferences () {
     const savedPreferences = await Preferences.get({ key: 'preferences' })
     preferences.value = JSON.parse(savedPreferences.value)
+  }
+  async function setSavedSettings () {
+    const savedSettings = await Preferences.get({ key: 'settings' })
+    appSettings.value = JSON.parse(savedSettings.value)
   }
 
   async function getMetadata () {
