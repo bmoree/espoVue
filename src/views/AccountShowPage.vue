@@ -2,7 +2,7 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>Accounts list</ion-title>
+        <ion-title>Account <span v-if="account">{{ account.name }}</span></ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -14,19 +14,6 @@
       </ion-header>
 
       <div id="container" v-if="account">
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>Account {{ account.name }}</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            {{ account }}
-
-            <div v-if="layout">
-              <h3>Layout:</h3>
-              {{ layout }}
-            </div>
-          </ion-card-content>
-        </ion-card>
         
         <ion-card v-for="(panel, i) in layout" :key="i">
           <ion-card-header>
@@ -34,7 +21,10 @@
           </ion-card-header>
 
           <div v-for="(row, j) in panel.rows" :key="j" style="display:flex; justify-content:space-around">
-            <p v-for="(field, k) in row" :key="k">Field for {{ field.name }}</p>
+            <div v-for="(field, k) in row" :key="k">
+              <p>Field for {{ field.name }}</p>
+              <p v-html="getFieldValue(field.name)"></p>
+            </div>
           </div>
         </ion-card>
         
@@ -71,12 +61,12 @@ onBeforeMount( async () => {
   await fetchRecordLayout('Account')
 })
 
-watch(
+  watch(
       () => route.params.id,
       async newId => {
         account.value = await fetchAccount(newId)
       }
-    )
+  )
 
 
   async function setSavedToken () {
@@ -154,6 +144,11 @@ await fetch(`${espoUrl.value}/api/v1/${entity}/layout/detail`, {
   })
   .catch(console.error);
 }
+
+function getFieldValue (field) {
+    return account.value[field]
+  }
+
 
 </script>
 
