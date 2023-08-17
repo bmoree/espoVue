@@ -33,6 +33,7 @@
             </ion-item>
             <ion-button expand="full" @click="login()">Login</ion-button>
             <p>Token is: {{ token }}</p>
+            {{ user }}
             <ion-button expand="full" @click="getMetadata()">Get Metadata</ion-button>
 
           </ion-card-content>
@@ -44,7 +45,11 @@
           <ion-card-content>
             <p>You have access to:</p>
             <ul>
-              <li v-for="(tab, index) in appSettings.tabList" :key="index">{{ tab }}</li>
+              <li v-for="(tab, index) in appSettings.tabList" :key="index">
+                <a :href="`/${tab}`">
+                  {{ tab }}
+                </a>
+              </li>
             </ul>
           </ion-card-content>
         </ion-card>
