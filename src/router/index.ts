@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import HomePage from '../views/HomePage.vue'
-import AccountsPage from '../views/AccountsPage.vue'
-import AccountShowPage from '../views/AccountShowPage.vue'
+import EntityListingPage from '../views/EntityListingPage.vue'
+import EntityShowPage from '../views/EntityShowPage.vue'
+import EntityEditPage from '../views/EntityEditPage.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -15,14 +16,19 @@ const routes: Array<RouteRecordRaw> = [
     component: HomePage
   },
   {
-    path: '/Account',
-    name: 'Account.list',
-    component: AccountsPage
+    path: '/:entity',
+    name: 'Entity.list',
+    component: EntityListingPage
   },
   {
-    path: '/Account/:id',
-    name: 'Account.show',
-    component: AccountShowPage
+    path: '/:entity/:id',
+    name: 'Entity.show',
+    component: EntityShowPage
+  },
+  {
+    path: '/:entity/:id/edit',
+    name: 'Entity.edit',
+    component: EntityEditPage
   }
 ]
 

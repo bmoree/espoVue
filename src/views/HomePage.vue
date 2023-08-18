@@ -6,7 +6,7 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content :fullscreen="true">
+    <ion-content class="ion-padding">
       <ion-header collapse="condense">
         <ion-toolbar>
           <ion-title size="large">Espo Capacitor Vue client (fullscreen)</ion-title>
@@ -32,8 +32,10 @@
               <ion-input type="password" v-model="userInfo.password"></ion-input>
             </ion-item>
             <ion-button expand="full" @click="login()">Login</ion-button>
-            <p>Token is: {{ token }}</p>
+            <p>User: (token: {{ token }})</p>
             {{ user }}
+            <p>Metadata is: </p>
+            {{ metadata.entityDefs }}
             <ion-button expand="full" @click="getMetadata()">Get Metadata</ion-button>
 
           </ion-card-content>
@@ -76,12 +78,14 @@ const user = ref(null);
 const preferences = ref(null);
 const appSettings = ref({});
 const token = ref('');
+const metadata = ref({});
 
  onMounted( () => {
   setSavedToken()
   setSavedUser()
   setSavedPreferences()
   setSavedSettings()
+  setAuthState()
 })
 
 
@@ -128,14 +132,28 @@ async function login () {
         key: 'settings',
         value: JSON.stringify(data.settings),
       });
+      Preferences.set({
+        key: 'loggedIn',
+        value: JSON.stringify(true),
+      });
       
       setSavedToken()
       setSavedUser()
       setSavedPreferences()
       setSavedSettings()
+      setAuthState()
     })
     .catch(console.error);
 }
+  async function setAuthState () {
+    const authState = await Preferences.get({ key: 'loggedIn' })
+    loggedIn.value = JSON.parse(authState.value)
+  }
+  async function setSavedMetadata () {
+    const savedMetadata = await Preferences.get({ key: 'metadata' })
+    metadata.value = JSON.parse(savedMetadata.value)
+  }
+
   async function setSavedToken () {
     const savedToken = await Preferences.get({ key: 'token' })
     token.value = savedToken.value
@@ -154,8 +172,8 @@ async function login () {
   }
 
   async function getMetadata () {
-  const espoToken = btoa(`${userInfo.value.username}:${token.value}`)
-  await fetch(`${espoUrl.value}/api/v1/Metadata`, {
+    const espoToken = btoa(`${user.value.userName}:${token.value}`)
+    await fetch(`${espoUrl.value}/api/v1/Metadata`, {
     method: "GET", // *GET, POST, PUT, DELETE, etc.
     mode: "cors", // no-cors, *cors, same-origin
     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
@@ -178,6 +196,13 @@ async function login () {
     })
     .then((data) => {
       console.log(data)
+      Preferences.set({
+        key: 'metadata',
+        value: JSON.stringify(data),
+      });
+      setSavedMetadata()
+
+
     })
     .catch(console.error);
 }
@@ -185,7 +210,7 @@ async function login () {
 </script>
 
 <style scoped>
-#container {
+/* #container {
   text-align: center;
   
   position: absolute;
@@ -193,7 +218,7 @@ async function login () {
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-}
+} */
 
 #container strong {
   font-size: 20px;

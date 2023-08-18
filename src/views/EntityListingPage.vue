@@ -2,11 +2,11 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>Accounts list</ion-title>
+        <ion-title>{{ route.params.entity }} list</ion-title>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content :fullscreen="true">
+    <ion-content class="ion-padding">
       <ion-header collapse="condense">
         <ion-toolbar>
           <ion-title size="large">Espo Capacitor Vue client (fullscreen)</ion-title>
@@ -19,17 +19,17 @@
             <!-- <ion-card-title>Hi {{ user.name }}</ion-card-title> -->
           </ion-card-header>
           <ion-card-content>
-            <p>Accounts</p>
+            <p>{{route.params.entity}} Index</p>
             <ul>
-              <li v-for="(account, index) in accounts" :key="index">
-                <a :href="`/Account/${account.id}`">
-                  {{ account.name }}
-                </a>
+              <li v-for="(record, index) in records" :key="index">
+                <router-link :to="{ name: 'Entity.show', params: { id: record.id, entity: route.params.entity }}">
+                  {{ record.name }}
+                </router-link>
               </li>
             </ul>
           </ion-card-content>
         </ion-card>
-        <ion-button expand="full" @click="loggedIn = !loggedIn">toggle login</ion-button>
+        <ion-button expand="full" router-link="/home">Home</ion-button>
 
       </div>
     </ion-content>
@@ -41,20 +41,24 @@ import { ref, onBeforeMount } from 'vue'
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, loadingController } from '@ionic/vue';
 import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton } from '@ionic/vue';
 import { Preferences } from '@capacitor/preferences';
+import { useRouter, useRoute } from 'vue-router';
 
-const loggedIn = ref(false);
+const router = useRouter()
+const route = useRoute()
+
+const loggedIn = ref();
 const espoUrl = ref('http://espocrm.test');
 const user = ref({
   userName: ''
 });
-const accounts = ref(null);
+const records = ref(null);
 const appSettings = ref({});
 const token = ref('');
 
 onBeforeMount( async () => {
   await setSavedToken()
   await setSavedUser()
-  await fetchAccounts()
+  await fetchRecords()
 })
 
 
@@ -75,9 +79,9 @@ onBeforeMount( async () => {
   //   appSettings.value = JSON.parse(savedSettings.value)
   // }
 
-  async function fetchAccounts () {
+  async function fetchRecords () {
   const espoToken = btoa(`${user.value.userName}:${token.value}`)
-  await fetch(`${espoUrl.value}/api/v1/Account`, {
+  await fetch(`${espoUrl.value}/api/v1/${route.params.entity}`, {
     method: "GET", // *GET, POST, PUT, DELETE, etc.
     mode: "cors", // no-cors, *cors, same-origin
     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
@@ -100,7 +104,7 @@ onBeforeMount( async () => {
     })
     .then((data) => {
       console.log(data)
-      accounts.value = data.list
+      records.value = data.list
     })
     .catch(console.error);
 }
@@ -108,7 +112,7 @@ onBeforeMount( async () => {
 </script>
 
 <style scoped>
-#container {
+/* #container {
   text-align: center;
   
   position: absolute;
@@ -117,7 +121,7 @@ onBeforeMount( async () => {
   top: 50%;
   transform: translateY(-50%);
 }
-
+ */
 #container strong {
   font-size: 20px;
   line-height: 26px;
