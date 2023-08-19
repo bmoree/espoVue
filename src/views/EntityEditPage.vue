@@ -22,17 +22,11 @@
           <div v-for="(row, j) in panel.rows" :key="j" style="display:flex; justify-content:space-around">
             <div v-for="(field, k) in row" :key="k">
               <p>Fieldtype: {{ fields[field.name].type }} for {{ field.name }}</p>
-              <component :is="`Field.${fields[field.name].type}`" :value="record[field.name]"></component>
-              <!-- <input 
-                type="text" 
-                v-model="record[field.name]"> -->
+              <component :is="getFieldComponent(fields[field.name].type)" :modelValue="record[field.name]"></component>
               <p v-html="record[field.name]"></p>
             </div>
           </div>
         </ion-card>
-        <div>
-            <!-- <pre>{{ metadata.entityDefs[route.params.entity].fields }}</pre> -->
-          </div>
 
       </div>
     </ion-content>
@@ -40,15 +34,13 @@
   </ion-page>
 </template>
 
-<script setup lang="ts">
-import { ref, onBeforeMount, watch, computed } from 'vue'
+<script lang="ts">
+import { ref, onBeforeMount, watch, computed, defineAsyncComponent } from 'vue'
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, loadingController } from '@ionic/vue';
 import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton } from '@ionic/vue';
 import { Preferences } from '@capacitor/preferences';
 import { createDOMEvent } from '@vue/test-utils/dist/createDomEvent';
 import { useRouter, useRoute } from 'vue-router';
-import * as Field from '../components/fields/';
-
 
 const router = useRouter()
 const route = useRoute()
@@ -58,6 +50,25 @@ const espoUrl = ref('http://espocrm.test');
 const user = ref({
   userName: ''
 });
+
+const getFieldComponent = (componentName: string) =>
+  defineAsyncComponent(
+    () =>
+      import(
+        `../components/fields/${componentName[0].toUpperCase()}${componentName.substring(1)}Field.vue`
+      ),
+  );
+
+
+// function getFieldComponent (componentName) {
+//   // componentName = componentName.charAt(0).toUpperCase() + componentName.slice(1) + 'Field'
+//   // console.log('Field.' + componentName)
+//   // return `Field.${componentName}`
+//   console.log(`field-${componentName}`)
+//   return `field-${componentName}`
+// }
+
+
 const record = ref(null);
 const layout = ref(null);
 const appSettings = ref({});
@@ -102,24 +113,24 @@ onBeforeMount( async () => {
   // }
 
 async function updateRecord (id = route.params.id, record) {
-const espoToken = btoa(`${user.value.userName}:${token.value}`)
-await fetch(`${espoUrl.value}/api/v1/${route.params.entity}/${id}`, {
-  method: "PUT", // *GET, POST, PUT, DELETE, etc.
-  mode: "cors", // no-cors, *cors, same-origin
-  cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-  credentials: "include",
-  headers: {
-    "Accept": " */*",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8,nl;q=0.7",
-    "Connection": "keep-alive",
-    "Content-Type": "application/json",
-    // "Host": `${espoUrl.value}`,
-    "Host": `http://app.espocrm.test`,
-    "Authorization": `Basic ${espoToken}`,
-    "Espo-Authorization": `${espoToken}`,
-    "Espo-Authorization-By-Token": "true",
-    "Espo-Authorization-Create-Token-Secret": "false"
+  const espoToken = btoa(`${user.value.userName}:${token.value}`)
+  await fetch(`${espoUrl.value}/api/v1/${route.params.entity}/${id}`, {
+    method: "PUT", // *GET, POST, PUT, DELETE, etc.
+    mode: "cors", // no-cors, *cors, same-origin
+    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: "include",
+    headers: {
+      "Accept": " */*",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8,nl;q=0.7",
+      "Connection": "keep-alive",
+      "Content-Type": "application/json",
+      // "Host": `${espoUrl.value}`,
+      "Host": `http://app.espocrm.test`,
+      "Authorization": `Basic ${espoToken}`,
+      "Espo-Authorization": `${espoToken}`,
+      "Espo-Authorization-By-Token": "true",
+      "Espo-Authorization-Create-Token-Secret": "false"
   },
   body: JSON.stringify(record)})
   .then(function(response) {
@@ -132,25 +143,25 @@ await fetch(`${espoUrl.value}/api/v1/${route.params.entity}/${id}`, {
   .catch(console.error);
 }
 async function fetchRecord (id) {
-const espoToken = btoa(`${user.value.userName}:${token.value}`)
-await fetch(`${espoUrl.value}/api/v1/${route.params.entity}/${route.params.id}`, {
-  method: "GET", // *GET, POST, PUT, DELETE, etc.
-  mode: "cors", // no-cors, *cors, same-origin
-  cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-  credentials: "include",
-  headers: {
-    "Accept": " */*",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8,nl;q=0.7",
-    "Connection": "keep-alive",
-    "Content-Type": "application/json",
-    // "Host": `${espoUrl.value}`,
-    "Host": `http://app.espocrm.test`,
-    "Authorization": `Basic ${espoToken}`,
-    "Espo-Authorization": `${espoToken}`,
-    "Espo-Authorization-By-Token": "true",
-    "Espo-Authorization-Create-Token-Secret": "false"
-  }})
+  const espoToken = btoa(`${user.value.userName}:${token.value}`)
+  await fetch(`${espoUrl.value}/api/v1/${route.params.entity}/${route.params.id}`, {
+    method: "GET", // *GET, POST, PUT, DELETE, etc.
+    mode: "cors", // no-cors, *cors, same-origin
+    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: "include",
+    headers: {
+      "Accept": " */*",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8,nl;q=0.7",
+      "Connection": "keep-alive",
+      "Content-Type": "application/json",
+      // "Host": `${espoUrl.value}`,
+      "Host": `http://app.espocrm.test`,
+      "Authorization": `Basic ${espoToken}`,
+      "Espo-Authorization": `${espoToken}`,
+      "Espo-Authorization-By-Token": "true",
+      "Espo-Authorization-Create-Token-Secret": "false"
+    }})
   .then(function(response) {
     return response.json()
   })
@@ -161,25 +172,25 @@ await fetch(`${espoUrl.value}/api/v1/${route.params.entity}/${route.params.id}`,
   .catch(console.error);
 }
 async function fetchRecordLayout (entity) {
-const espoToken = btoa(`${user.value.userName}:${token.value}`)
-await fetch(`${espoUrl.value}/api/v1/${entity}/layout/detail`, {
-  method: "GET", // *GET, POST, PUT, DELETE, etc.
-  mode: "cors", // no-cors, *cors, same-origin
-  cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-  credentials: "include",
-  headers: {
-    "Accept": " */*",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8,nl;q=0.7",
-    "Connection": "keep-alive",
-    "Content-Type": "application/json",
-    // "Host": `${espoUrl.value}`,
-    "Host": `http://app.espocrm.test`,
-    "Authorization": `Basic ${espoToken}`,
-    "Espo-Authorization": `${espoToken}`,
-    "Espo-Authorization-By-Token": "true",
-    "Espo-Authorization-Create-Token-Secret": "false"
-  }})
+  const espoToken = btoa(`${user.value.userName}:${token.value}`)
+  await fetch(`${espoUrl.value}/api/v1/${entity}/layout/detail`, {
+    method: "GET", // *GET, POST, PUT, DELETE, etc.
+    mode: "cors", // no-cors, *cors, same-origin
+    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: "include",
+    headers: {
+      "Accept": " */*",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8,nl;q=0.7",
+      "Connection": "keep-alive",
+      "Content-Type": "application/json",
+      // "Host": `${espoUrl.value}`,
+      "Host": `http://app.espocrm.test`,
+      "Authorization": `Basic ${espoToken}`,
+      "Espo-Authorization": `${espoToken}`,
+      "Espo-Authorization-By-Token": "true",
+      "Espo-Authorization-Create-Token-Secret": "false"
+    }})
   .then(function(response) {
     return response.json()
   })
