@@ -1,59 +1,55 @@
 <template>
-  <ion-page>
-    <ion-header :translucent="true">
-      <ion-toolbar>
-        <ion-title>{{ route.params.entity }} <span v-if="record">{{ record.name }}</span></ion-title>
-      </ion-toolbar>
-    </ion-header>
-
+  <ion-page id="main-content">
+    <app-header></app-header>
     <ion-content class="ion-padding">
       <ion-header collapse="condense">
         <ion-toolbar>
-          <ion-title size="large">Espo Capacitor Vue client (fullscreen)</ion-title>
+          <ion-title size="large">{{ app.title }}</ion-title>
         </ion-toolbar>
       </ion-header>
-
-      <div id="container" v-if="record">
+      <div v-if="record">
         
         <ion-card v-for="(panel, i) in layout" :key="i">
           <ion-card-header>
             <ion-card-title>{{ panel.label }}</ion-card-title>
           </ion-card-header>
-
-          <div v-for="(row, j) in panel.rows" :key="j" style="display:flex; justify-content:space-around">
-            <div v-for="(field, k) in row" :key="k">
-              <p>Field for {{ field.name }}</p>
-              <p v-html="record[field.name]"></p>
-            </div>
-          </div>
+          <ion-grid>
+            <ion-row v-for="(row, j) in panel.rows" :key="j" style="display:flex; justify-content:space-around">
+              <ion-col v-for="(field, k) in row" :key="k">
+                <label><strong> {{ field.name }}</strong></label> 
+                <p v-html="record[field.name]"></p>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
         </ion-card>
-          <router-link :to="{ name: 'Entity.edit', params: { id: route.params.id, entity: route.params.entity }}">
-            Edit
-          </router-link>
+        <router-link v-if="route.params.id && route.params.entity" :to="{ name: 'Entity.edit', params: { id: route.params.id, entity: route.params.entity }}">
+          Edit
+        </router-link>
       </div>
     </ion-content>
   </ion-page>
+
 </template>
 
 <script setup lang="ts">
 import { ref, onBeforeMount, watch } from 'vue'
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, loadingController } from '@ionic/vue';
-import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton } from '@ionic/vue';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+import {  IonGrid, IonRow, IonCol } from '@ionic/vue';
+import { IonCard, IonCardHeader, IonCardTitle } from '@ionic/vue';
 import { Preferences } from '@capacitor/preferences';
-import { createDOMEvent } from '@vue/test-utils/dist/createDomEvent';
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
+import { useAppStore } from '../store/app'
 
-const router = useRouter()
+const app = useAppStore()
 const route = useRoute()
 
-const loggedIn = ref(false);
+
 const espoUrl = ref('http://espocrm.test');
 const user = ref({
   userName: ''
 });
-const record = ref(null);
-const layout = ref(null);
-const appSettings = ref({});
+const record = ref({});
+const layout = ref({});
 const token = ref('');
 
 onBeforeMount( async () => {
@@ -61,12 +57,16 @@ onBeforeMount( async () => {
   await setSavedUser()
   await fetchRecord(route.params.id)
   await fetchRecordLayout(route.params.entity)
+  await  app.updateTitle(record.value.name)
+
 })
 
   watch(
       () => route.params.id,
       async newId => {
-        record.value = await fetchRecord(newId)
+        if(newId != null) {
+          record.value = await fetchRecord(newId)
+        }
       }
   )
 
@@ -88,9 +88,9 @@ onBeforeMount( async () => {
   //   appSettings.value = JSON.parse(savedSettings.value)
   // }
 
-async function fetchRecord (id) {
+async function fetchRecord (id = route.params.id) {
 const espoToken = btoa(`${user.value.userName}:${token.value}`)
-await fetch(`${espoUrl.value}/api/v1/${route.params.entity}/${route.params.id}`, {
+await fetch(`${espoUrl.value}/api/v1/${route.params.entity}/${id}`, {
   method: "GET", // *GET, POST, PUT, DELETE, etc.
   mode: "cors", // no-cors, *cors, same-origin
   cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
@@ -117,7 +117,7 @@ await fetch(`${espoUrl.value}/api/v1/${route.params.entity}/${route.params.id}`,
   })
   .catch(console.error);
 }
-async function fetchRecordLayout (entity) {
+async function fetchRecordLayout (entity = route.params.entity) {
 const espoToken = btoa(`${user.value.userName}:${token.value}`)
 await fetch(`${espoUrl.value}/api/v1/${entity}/layout/detail`, {
   method: "GET", // *GET, POST, PUT, DELETE, etc.
@@ -150,29 +150,6 @@ await fetch(`${espoUrl.value}/api/v1/${entity}/layout/detail`, {
 </script>
 
 <style scoped>
-/* #container {
-  text-align: center;
-  
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-} */
-
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-  
-  color: #8c8c8c;
-  
-  margin: 0;
-}
 
 #container a {
   text-decoration: none;

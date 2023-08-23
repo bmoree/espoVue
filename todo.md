@@ -9,6 +9,7 @@ Done  - Show - dynamic (show the data for the Entity)
 Done  - Edit (see if we can maybe setup the simplest edit page ever.)
 - populate show/edit pages based on metadata
   DONE - layouts
-- add bottom panel support for related entities
+  - add bottom panel support for related entities
 - add navigation to all allowed Entities
-- create an appropriate edit field components for each fieldtype
+DONE - create an appropriate edit field components for each fieldtype
+- add layouts through provider with route.meta: https://itnext.io/3-ways-to-create-a-multiple-layouts-system-vue-3-b24c0736b7bb

@@ -1,58 +1,51 @@
 <template>
-  <ion-page>
-    <ion-header :translucent="true">
-      <ion-toolbar>
-        <ion-title>{{ route.params.entity }} list</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
+  <ion-page id="main-content">
+    <app-header></app-header>
     <ion-content class="ion-padding">
       <ion-header collapse="condense">
         <ion-toolbar>
-          <ion-title size="large">Espo Capacitor Vue client (fullscreen)</ion-title>
+          <ion-title size="large">{{ app.title }}</ion-title>
         </ion-toolbar>
       </ion-header>
+      <ion-card v-if="records">
+      <ion-card-header>
+        <ion-card-title>{{route.params.entity}} Index</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ul v-if="records">
+          <li v-for="(record, index) in records" :key="index">
+            <router-link :to="{ name: 'Entity.show', params: { id: record.id, entity: route.params.entity }}">
+              {{ record.name }}
+            </router-link>
+          </li>
+        </ul>
+      </ion-card-content>
+    </ion-card>
+    <ion-button expand="full" router-link="/home">Home</ion-button>
 
-      <div id="container" >
-        <ion-card>
-          <ion-card-header>
-            <!-- <ion-card-title>Hi {{ user.name }}</ion-card-title> -->
-          </ion-card-header>
-          <ion-card-content>
-            <p>{{route.params.entity}} Index</p>
-            <ul>
-              <li v-for="(record, index) in records" :key="index">
-                <router-link :to="{ name: 'Entity.show', params: { id: record.id, entity: route.params.entity }}">
-                  {{ record.name }}
-                </router-link>
-              </li>
-            </ul>
-          </ion-card-content>
-        </ion-card>
-        <ion-button expand="full" router-link="/home">Home</ion-button>
-
-      </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
 import { ref, onBeforeMount } from 'vue'
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, loadingController } from '@ionic/vue';
-import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton } from '@ionic/vue';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton } from '@ionic/vue';
 import { Preferences } from '@capacitor/preferences';
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
+import { useAppStore } from '../store/app'
 
-const router = useRouter()
+const app = useAppStore()
 const route = useRoute()
 
-const loggedIn = ref();
+app.updateTitle(`${route.params.entity} index`)
+
+
 const espoUrl = ref('http://espocrm.test');
 const user = ref({
   userName: ''
 });
-const records = ref(null);
-const appSettings = ref({});
+const records = ref([]);
 const token = ref('');
 
 onBeforeMount( async () => {

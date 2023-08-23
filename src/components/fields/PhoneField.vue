@@ -1,18 +1,33 @@
 <template>
-    <textarea 
-    :value="modelValue"
-    @input="$emit('update:modelValue', $event.target.value)"
-    ></textarea>
+    <ion-input 
+        type="tel"
+        :label="name"
+        :value="modelValue"
+        :required="settings.required ? 'required' : ''"
+        @input="$emit('update:modelValue', $event.target.value)"
+        label-placement="stacked" 
+        fill="outline"
+        ></ion-input>
 </template>
   
 <script setup lang="ts">
+import { IonInput } from '@ionic/vue';
 
 const props = defineProps({
     modelValue: {
-            type: String,
-            default: '',
-            required: true
-        }
+        type: String,
+        default: '',
+        required: true
+    },
+    name: {
+        type: String,
+        default: '',
+        required: true
+    },
+    settings: {
+        type: Object,
+        required: true
+    }
 })
 
 const emit = defineEmits(['update:modelValue']);

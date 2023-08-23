@@ -1,43 +1,38 @@
 <template>
-  <ion-page>
-    <ion-header :translucent="true">
-      <ion-toolbar>
-        <ion-title>Espo Capacitor Vue client</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
+  <ion-page id="main-content">
+    <app-header></app-header>
     <ion-content class="ion-padding">
       <ion-header collapse="condense">
         <ion-toolbar>
-          <ion-title size="large">Espo Capacitor Vue client (fullscreen)</ion-title>
+          <ion-title size="large">{{ app.title }}</ion-title>
         </ion-toolbar>
       </ion-header>
-
-      <div id="container" >
+      <div>
         <ion-card v-if="!loggedIn">
           <ion-card-header>
             <ion-card-title>SignIn</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-item>
-              <ion-label position="floating">Espo URL</ion-label>
-              <ion-input v-model="espoUrl"></ion-input>
+              <ion-input label="CRM URL" v-model="espoUrl" ></ion-input>
             </ion-item>
             <ion-item>
-              <ion-label position="floating">User Name</ion-label>
-              <ion-input v-model="userInfo.username"></ion-input>
+              <ion-input label="Username" v-model="userInfo.username"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-label position="floating">Password</ion-label>
-              <ion-input type="password" v-model="userInfo.password"></ion-input>
+              <ion-input label="password" type="password" v-model="userInfo.password"></ion-input>
             </ion-item>
             <ion-button expand="full" @click="login()">Login</ion-button>
             <p>User: (token: {{ token }})</p>
-            {{ user }}
+            <div v-if="user">
+              {{ user }}
+            </div>
             <p>Metadata is: </p>
-            {{ metadata.entityDefs }}
+            <div v-if="metadata">
+              {{ metadata.entityDefs }}
+            </div>
             <ion-button expand="full" @click="getMetadata()">Get Metadata</ion-button>
-
+      
           </ion-card-content>
         </ion-card>
         <ion-card v-else>
@@ -46,11 +41,11 @@
           </ion-card-header>
           <ion-card-content>
             <p>You have access to:</p>
-            <ul>
+            <ul v-if="appSettings.tabList">
               <li v-for="(tab, index) in appSettings.tabList" :key="index">
-                <a :href="`/${tab}`">
+                <router-link :to="{ name: 'Entity.list', params: { entity: tab }}">
                   {{ tab }}
-                </a>
+                </router-link>
               </li>
             </ul>
           </ion-card-content>
@@ -63,10 +58,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, loadingController } from '@ionic/vue';
-import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton } from '@ionic/vue';
+import { ref } from 'vue'
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonInput, IonButton } from '@ionic/vue';
 import { Preferences } from '@capacitor/preferences';
+import { useAppStore } from '../store/app'
+
+const app = useAppStore()
+app.updateTitle('Home')
 
 const loggedIn = ref(false);
 const espoUrl = ref('http://espocrm.test');
@@ -74,19 +73,18 @@ const userInfo = ref({
   username: '',
   password: ''
 });
-const user = ref(null);
-const preferences = ref(null);
+const user = ref({});
+const preferences = ref({});
 const appSettings = ref({});
 const token = ref('');
 const metadata = ref({});
 
- onMounted( () => {
   setSavedToken()
   setSavedUser()
   setSavedPreferences()
   setSavedSettings()
   setAuthState()
-})
+  setSavedMetadata()
 
 
 async function login () {
@@ -210,31 +208,4 @@ async function login () {
 </script>
 
 <style scoped>
-/* #container {
-  text-align: center;
-  
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-} */
-
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-  
-  color: #8c8c8c;
-  
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
-}
 </style>

@@ -1,13 +1,14 @@
 <template>
     <ion-input 
-        type="url"
+        type="number"
         :label="name"
         :value="modelValue"
         :required="settings.required ? 'required' : ''"
-        @input="$emit('update:modelValue', $event.target.value)"
+        @change="$emit('update:modelValue', $event.target.value)"
         label-placement="stacked" 
         fill="outline"
         ></ion-input>
+
 </template>
   
 <script setup lang="ts">
